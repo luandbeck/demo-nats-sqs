@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  nats-server:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+    networks:
+      - nats-localstack-network
+
+  localstack:
+    image: localstack/localstack:2.2.0
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - GATEWAY_LISTEN=0.0.0.0:4566
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "./aws/queues.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - nats-localstack-network
+
+networks:
+  nats-localstack-network:
